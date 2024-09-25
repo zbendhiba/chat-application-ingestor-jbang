@@ -1,0 +1,17 @@
+- route:
+    id: route-2705
+    from:
+      id: from-2108
+      uri: direct:transform
+      steps:
+        - transform:
+            toType: qdrant:embeddings
+        - setBody:
+            id: setBody-1689
+            expression:
+              constant:
+                expression: "********* yaye **************"
+        - to:
+            id: to-2762
+            uri: log:InfoLogger
+            parameters: {}
