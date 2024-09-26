@@ -1,17 +1,37 @@
 #camel-k dependency=dev.langchain4j:langchain4j-embeddings:0.34.0
 
 - beans:
-    - name: myEmbeddingModel
-      type: dev.langchain4j.model.huggingface.HuggingFaceEmbeddingModel
-      builderClass: dev.zineb.embedding.HuggingFaceModelCustomBuilder
+    - builderClass: dev.zineb.embedding.HuggingFaceModelCustomBuilder
+      name: myEmbeddingModel
       properties:
-         accessToken: "{{access.token}}"
-         modelId: "sentence-transformers/all-MiniLM-L6-v2"
-         waitForModel: true
-         timeout: 60
-- from:
-    uri: "timer:yaml"
-    parameters:
-      period: "5000"
-    steps:
-      - log: "${body}"
+        accessToken: "{{access.token}}"
+        modelId: sentence-transformers/all-MiniLM-L6-v2
+        timeout: 60
+        waitForModel: true
+      type: dev.langchain4j.model.huggingface.HuggingFaceEmbeddingModel
+- route:
+    id: route-3277
+    from:
+      uri: file:catalog?noop=true
+      steps:
+        - convertBodyTo:
+            type: java.lang.String
+        - to:
+            uri: direct:embed
+- route:
+    id: route-1538
+    from:
+      uri: direct:embed
+      steps:
+        - log:
+            message: "body :: ${body}"
+        - to:
+            uri: langchain4j-embeddings:test
+            parameters:
+              embeddingModel: "#myEmbeddingModel"
+        - to:
+            uri: direct:transform
+        - to:
+            id: to-4281
+            uri: log:InfoLogger
+            parameters: {}
