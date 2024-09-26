@@ -31,7 +31,24 @@
               embeddingModel: "#myEmbeddingModel"
         - to:
             uri: direct:transform
+- route:
+    id: route-2705
+    from:
+      id: from-2108
+      uri: direct:transform
+      steps:
+        - transform:
+            toType: qdrant:embeddings
         - to:
-            id: to-4281
+            id: to-3142
+            uri: log:InfoLogger
+            parameters: {}
+        - setBody:
+            id: setBody-1689
+            expression:
+              constant:
+                expression: "********* yaye **************"
+        - to:
+            id: to-2762
             uri: log:InfoLogger
             parameters: {}
