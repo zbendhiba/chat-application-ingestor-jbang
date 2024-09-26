@@ -1,0 +1,29 @@
+# camel-k: dependecy=dev.langchain4j:langchain4j-embeddings-all-minilm-l6-v2:0.32.0 dependency:dev.langchain4j:langchain4j-embeddings:0.32.0
+# DEPS dev.langchain4j:langchain4j-embeddings:0.32.0
+# DEPS dev.langchain4j:langchain4j-embeddings-all-minilm-l6-v2:0.32.0
+
+- beans:
+    - builderClass: ""
+      builderMethod: builder
+      constructors:
+        AllMiniL6V2EmbeddingModel: AllMiniLmL6V2EmbeddingModel
+      name: myEmbeddingModel
+      properties:
+        hello: hello
+      type: "#class:dev.langchain4j.model.huggingface.HuggingFaceEmbeddingModel"
+- route:
+    id: route-3277
+    from:
+      uri: file:catalog?noop=true
+      steps:
+        - convertBodyTo:
+            type: java.lang.String
+        - to:
+            uri: direct:embed
+- route:
+    id: route-1538
+    from:
+      uri: direct:embed
+      steps:
+        - log:
+            message: "body :: ${body}"
