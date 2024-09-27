@@ -2,7 +2,7 @@
 
 - beans:
     - builderClass: dev.zineb.embedding.HuggingFaceModelCustomBuilder
-      name: myEmbeddingModel
+      name: embeddingModel
       properties:
         accessToken: "{{access.token}}"
         modelId: sentence-transformers/all-MiniLM-L6-v2
@@ -27,8 +27,6 @@
             message: "body :: ${body}"
         - to:
             uri: langchain4j-embeddings:test
-            parameters:
-              embeddingModel: "#myEmbeddingModel"
         - to:
             uri: direct:transform
 - route:
