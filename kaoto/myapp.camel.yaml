@@ -8,9 +8,9 @@
         modelId: sentence-transformers/all-MiniLM-L6-v2
         timeout: 60
         waitForModel: true
-      type: dev.langchain4j.model.huggingface.HuggingFaceEmbeddingModel
+      type: dev.langchain4j.model.embedding.EmbeddingModel
 - route:
-    id: route-3277
+    id: ingest-files
     from:
       uri: file:catalog?noop=true
       steps:
@@ -19,7 +19,7 @@
         - to:
             uri: direct:embed
 - route:
-    id: route-1538
+    id: create-embeddings
     from:
       uri: direct:embed
       steps:
@@ -32,7 +32,7 @@
         - to:
             uri: direct:transform
 - route:
-    id: route-2705
+    id: to-qdrant
     from:
       id: from-2108
       uri: direct:transform
@@ -43,12 +43,22 @@
             id: to-3142
             uri: log:InfoLogger
             parameters: {}
-        - setBody:
-            id: setBody-1689
+        - setHeader:
+            id: setHeader-2243
             expression:
               constant:
-                expression: "********* yaye **************"
+                expression: UPSERT
+            name: CamelQdrantAction
         - to:
-            id: to-2762
+            id: to-2203
+            uri: qdrant:test-collection
+            parameters: {}
+        - setBody:
+            id: setBody-1650
+            expression:
+              constant:
+                expression: "********* Hello here - after qdrant insert ******"
+        - to:
+            id: to-4252
             uri: log:InfoLogger
             parameters: {}
