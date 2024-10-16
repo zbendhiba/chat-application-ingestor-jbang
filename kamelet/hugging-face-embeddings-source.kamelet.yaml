@@ -1,0 +1,83 @@
+# ---------------------------------------------------------------------------
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ---------------------------------------------------------------------------
+apiVersion: camel.apache.org/v1
+kind: Kamelet
+metadata:
+  annotations:
+    camel.apache.org/catalog.version: 4.9.0-SNAPSHOT
+    camel.apache.org/kamelet.group: HuggingFace Langchain4j Embeddings Source
+    camel.apache.org/kamelet.namespace: Langchain4j
+    camel.apache.org/kamelet.support.level: Stable
+    camel.apache.org/provider: Apache Software Foundation
+  labels:
+    camel.apache.org/kamelet.type: action
+  name: hugging-face-embeddings-action
+spec:
+  definition:
+    description: Produces langchain4j embeddings from String payload, using
+      HuggingFace Embedding Models
+    properties:
+      accessToken:
+        description: The Access Token to HuggingFace
+        format: password
+        title: AccessToken
+        type: string
+        x-descriptors:
+          - urn:camel:group:credentials
+      modelId:
+        default: sentence-transformers/all-MiniLM-L6-v2
+        description: The embeddingModel id
+        title: ModelId
+        type: string
+      timeout:
+        default: 60
+        description: The timeour
+        format: int64
+        title: Timeout
+        type: integer
+      waitForModel:
+        default: true
+        description: Describes if we need to wait for the EmbeddingModel
+        format: string
+        title: WaitForModel
+    required:
+      - accessToken
+    title: Converts String to Embeddings using HuggingFace Embedding Model
+  dependencies:
+    - camel:kamelet
+    - camel:core
+    - camel:langchain4j-embeddings
+    - mvn:dev.langchain4j:langchain4j-hugging-face:0.34.0
+    - mvn:dev.langchain4j:langchain4j-embeddings:0.34.0
+  template:
+    beans:
+      - builderClass: dev.zineb.embedding.HuggingFaceModelCustomBuilder
+        name: embeddingModel
+        properties:
+          accessToken: "{{accessToken}}"
+          modelId: "{{modelId}}"
+          timeout: "{{timeout}}"
+          waitForModel: "{{waitForModel}}"
+        type: dev.langchain4j.model.embedding.EmbeddingModel
+    from:
+      steps:
+        - to:
+            uri: langchain4j-embeddings:my-embeddings
+        - to:
+            id: to-3628
+            uri: kamelet:log-sink
+      uri: kamelet:source
