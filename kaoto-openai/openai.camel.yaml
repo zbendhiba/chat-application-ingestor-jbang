@@ -1,0 +1,65 @@
+#camel-k dependency=dev.langchain4j:langchain4j-embeddings:0.34.0
+
+- beans:
+    - builderClass: dev.zineb.embedding.OpenAiEmbeddingCustomModelBuilder
+      name: embeddingModel
+      properties:
+        apiKey: "{{YOUR_OPEN_AI_KEY}}"
+        modelName: text-embedding-3-small
+        dimensions: 1536
+        timeout: 60
+        maxRetries: 2
+        logRequests: true
+        logResponses: true
+      type: dev.langchain4j.model.embedding.EmbeddingModel
+- route:
+    id: ingest-files
+    from:
+      uri: file:catalog?noop=true
+      steps:
+        - convertBodyTo:
+            type: java.lang.String
+        - to:
+            uri: direct:embed
+- route:
+    id: create-embeddings
+    from:
+      uri: direct:embed
+      steps:
+        - log:
+            message: "body :: ${body}"
+        - to:
+            uri: langchain4j-embeddings:test
+        - to:
+            uri: direct:transform
+- route:
+    id: to-qdrant
+    from:
+      id: from-2108
+      uri: direct:transform
+      steps:
+        - transform:
+            toType: qdrant:embeddings
+        - to:
+            id: to-3142
+            uri: log:InfoLogger
+            parameters: {}
+        - setHeader:
+            id: setHeader-2243
+            expression:
+              constant:
+                expression: UPSERT
+            name: CamelQdrantAction
+        - to:
+            id: to-2203
+            uri: qdrant:test-collection
+            parameters: {}
+        - setBody:
+            id: setBody-1650
+            expression:
+              constant:
+                expression: "********* Hello here - after qdrant insert ******"
+        - to:
+            id: to-4252
+            uri: log:InfoLogger
+            parameters: {}
